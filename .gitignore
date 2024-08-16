@@ -1,0 +1,26 @@
+# Maven build directory
+/Backend-z-manager/target/
+
+# Node modules
+/frontend-z-manager/node_modules/
+
+# Log files
+**/logs/
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+/.idea/
+/.vscode/
+
+# Environment files
+/taskmanager-backend/application.properties
+/taskmanager-frontend/.env.local
+
+# Other
+*.swp
+*.bak
+.vscode

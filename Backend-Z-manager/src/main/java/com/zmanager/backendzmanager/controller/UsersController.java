@@ -1,21 +1,21 @@
 package com.zmanager.backendzmanager.controller;
 
-import com.zmanager.backendzmanager.model.User;
-import com.zmanager.backendzmanager.repository.UserRepository;
+import com.zmanager.backendzmanager.model.Users;
+import com.zmanager.backendzmanager.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class UserController {
+public class UsersController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UsersRepository usersRepository;
 
     @PostMapping("/user")
-    User newUser(@RequestBody User newUser){
-        return userRepository.save(newUser);
+    Users newUser(@RequestBody Users newUser){
+        return usersRepository.save(newUser);
     }
 
 }

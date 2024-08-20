@@ -1,7 +1,7 @@
 package com.zmanager.backendzmanager.controller;
 
 import com.zmanager.backendzmanager.exception.UserNotFoundException;
-import com.zmanager.backendzmanager.model.Users;
+import com.zmanager.backendzmanager.model.User;
 import com.zmanager.backendzmanager.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,28 +9,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class UsersController {
+public class UserController {
 
     @Autowired
     private UsersRepository usersRepository;
 
     @PostMapping("/user")
-    Users newUser(@RequestBody Users newUser){
+    User newUser(@RequestBody User newUser){
         return usersRepository.save(newUser);
     }
 
     @GetMapping("/users")
-    List<Users> getAllUsers(){
+    List<User> getAllUsers(){
         return usersRepository.findAll();
     }
 
     @GetMapping("user/{id}")
-    Users getUserById(@PathVariable Long id){
+    User getUserById(@PathVariable Long id){
         return usersRepository.findById(id).orElseThrow(() ->new UserNotFoundException(id));
     }
 
     @PutMapping("user/{id}")
-    Users updateUser(@PathVariable Long id, @RequestBody Users UpdatedUser){
+    User updateUser(@PathVariable Long id, @RequestBody User UpdatedUser){
         return usersRepository.findById(id).
                 map(users -> {
                     users.setName(UpdatedUser.getName());

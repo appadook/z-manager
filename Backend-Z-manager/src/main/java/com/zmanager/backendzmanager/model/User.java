@@ -1,12 +1,12 @@
 package com.zmanager.backendzmanager.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
-public class Users {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +16,9 @@ public class Users {
     private String name;
     private String email;
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bucket> buckets;
 
     public Long getId() {
         return id;
@@ -55,5 +58,13 @@ public class Users {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<Bucket> getBuckets() {
+        return buckets;
+    }
+
+    public void setBuckets(List<Bucket> buckets) {
+        this.buckets = buckets;
     }
 }

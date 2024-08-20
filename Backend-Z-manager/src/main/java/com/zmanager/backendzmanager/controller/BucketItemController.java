@@ -27,7 +27,7 @@ public class BucketItemController {
     @Autowired
     private BucketItemRepository bucketItemRepository;
 
-    // Endpoint to add a new bucket item for a specific bucket and user
+
     @PostMapping
     public ResponseEntity<BucketItem> createBucketItem(
             @PathVariable Long userId,

@@ -9,28 +9,29 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UsersRepository usersRepository;
 
     @PostMapping("/user")
-    User newUser(@RequestBody User newUser){
+    public User newUser(@RequestBody User newUser){
         return usersRepository.save(newUser);
     }
 
     @GetMapping("/users")
-    List<User> getAllUsers(){
+    public List<User> getAllUsers(){
         return usersRepository.findAll();
     }
 
     @GetMapping("user/{id}")
-    User getUserById(@PathVariable Long id){
+    public User getUserById(@PathVariable Long id){
         return usersRepository.findById(id).orElseThrow(() ->new UserNotFoundException(id));
     }
 
     @PutMapping("user/{id}")
-    User updateUser(@PathVariable Long id, @RequestBody User UpdatedUser){
+    public User updateUser(@PathVariable Long id, @RequestBody User UpdatedUser){
         return usersRepository.findById(id).
                 map(users -> {
                     users.setName(UpdatedUser.getName());
@@ -41,7 +42,7 @@ public class UserController {
     }
 
     @DeleteMapping("user/{id}")
-    String deleteUser(@PathVariable Long id){
+    public String deleteUser(@PathVariable Long id){
         if (!usersRepository.existsById(id)){
             throw new UserNotFoundException(id);
         }

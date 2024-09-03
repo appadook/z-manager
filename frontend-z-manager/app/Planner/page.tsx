@@ -1,6 +1,5 @@
 'use client'
 
-
 import React from 'react';
 import {useState, useEffect} from 'react';
 import FullCalendar from '@fullcalendar/react';
@@ -53,11 +52,12 @@ export default function Planner() {
               className="bucket-item bg-blue-500 text-white p-4 rounded cursor-pointer"
               draggable="true"
               onDragStart={(e) => {
+                console.log('Dragging started:', bucket.name);
                 e.dataTransfer.setData(
                   'application/json',
                   JSON.stringify({
                     title: bucket.name,
-                    id: bucket.id,
+                    start: new Date(new Date().setHours(new Date().getHours() + 4))
                   })
                 );
               }}
@@ -70,7 +70,7 @@ export default function Planner() {
         )}
         
 
-        <div className={`text-white ${styles.plannerContainer} ${styles.customCalendarBg} ${styles.customScrollgrid}`}>
+        <div className={`text-white `}>
         <FullCalendar
         plugins={[timeGridPlugin, interactionPlugin]}
         initialView="timeGridDay"

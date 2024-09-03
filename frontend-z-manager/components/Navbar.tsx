@@ -21,8 +21,11 @@ const pages = ['Dashboard', 'Buckets', 'Planner'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 export default function Navbar() {
+  
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  
+  
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -53,7 +56,7 @@ export default function Navbar() {
             href="#app-bar-with-responsive-menu"
             className="mr-2 hidden md:flex font-mono font-bold tracking-wider text-white"
           >
-            LOGO
+            Z-MANAGER
           </Typography>
 
           <Box className="flex-grow flex md:hidden">
@@ -86,6 +89,7 @@ export default function Navbar() {
               {pages.map((page) => (
                 <Link href={`/${page}`} key={page} passHref>
                     <MenuItem key={page} onClick={handleCloseNavMenu}>
+                    
                         <Typography className='text-center'>{page}</Typography>
                     </MenuItem>
                 </Link>
@@ -100,7 +104,7 @@ export default function Navbar() {
             href="#app-bar-with-responsive-menu"
             className="mr-2 flex md:hidden flex-grow font-mono font-bold tracking-wider text-white"
           >
-            LOGO
+            Z-MANAGER
           </Typography>
           <Box className="flex-grow hidden md:flex">
             {pages.map((page) => (
@@ -118,7 +122,7 @@ export default function Navbar() {
           <Box className="flex-grow-0">
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} className="p-0">
-                <Avatar alt="" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="" src="/public/next.svg" />
               </IconButton>
             </Tooltip>
             <Menu

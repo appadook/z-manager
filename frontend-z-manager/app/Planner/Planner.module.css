@@ -1,0 +1,91 @@
+/* Planner.module.css */
+
+/* Container for the planner */
+
+.plannerContainer {
+    @apply bg-navy-900 p-6 rounded-lg shadow-md;
+    
+}
+  
+  /* Header toolbar styles */
+  .customHeaderToolbar {
+    @apply bg-navy-800 text-white p-2 rounded;
+  }
+  
+  .customButton {
+    @apply text-white bg-navy-700 hover:bg-navy-600 rounded;
+  }
+  
+  .customButtonPrimary {
+    @apply bg-navy-600 hover:bg-navy-500;
+  }
+  
+  /* TimeGrid view styles without grid lines */
+  .timeGridSlot {
+    @apply bg-navy-900;
+  }
+  
+  .colHeaderCell {
+    @apply bg-navy-800 text-white;
+  }
+  
+  .timeGridAxisCushion {
+    @apply text-navy-300;
+  }
+  
+  /* Remove grid lines */
+  .customNoGrid .fc-scrollgrid, 
+  .customNoGrid .fc-col-header-cell,
+  .customNoGrid .fc-timegrid-col,
+  .customNoGrid .fc-timegrid-axis {
+    border: none !important;
+  }
+  
+  /* Event styles */
+  .customEvent {
+    @apply bg-navy-600 text-white border-none shadow-md rounded-lg;
+  }
+  
+  .customEventHover {
+    @apply bg-navy-500;
+  }
+  
+  /* Responsive design for smaller screens */
+  @media (max-width: 768px) {
+    .customHeaderToolbar {
+      flex-direction: column;
+    }
+  
+    .timeGridEvent {
+      font-size: 0.85rem;
+    }
+  }
+  
+  /* Calendar background */
+  .customCalendarBg {
+    @apply bg-navy-900;
+  }
+  
+  .customScrollgrid {
+    @apply rounded-lg;
+  }
+  
+  /* Transitions and hover effects */
+  .customEventTransition {
+    transition: background-color 0.3s ease;
+  }
+  
+  .customEventTransitionHover {
+    background-color: #2b6cb0;
+  }
+  
+  /* Custom font */
+  .customFont {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .fc-timegrid-slot {
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+  

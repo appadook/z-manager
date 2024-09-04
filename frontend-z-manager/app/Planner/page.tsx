@@ -2,13 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import { CalendarApi } from '@fullcalendar/core'; 
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import api from '../api/axiosInstance';
 
 
 export default function Planner() {
-  const calendarRef = useRef(null);
+  const calendarRef = useRef<FullCalendar>(null);
   type BucketProps = {
     id: number
     name: string
@@ -24,7 +25,7 @@ export default function Planner() {
   useEffect(() => {
     async function fetchBuckets() {
       try {
-        const response = await api.get('/users/1/buckets');
+        const response = await api.get(`/users/${user_id}/buckets`);
         setBuckets(response.data);
       } catch (error) {
         console.error('Error fetching buckets:', error);
@@ -49,9 +50,48 @@ export default function Planner() {
     }
   }, []);
 
+
   const handleEventReceive = (info: any) => {
-    console.log('Event received:', info.event);
-    // Here you can save the event to your backend or update the UI
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const existingEvents = calendarApi.getEvents(); // Get all existing events
+      
+  
+      // Check if the event is already present (compare by id or another unique identifier)
+      const isDuplicate = existingEvents.some(event => event.id === info.event.id);
+  
+      if (isDuplicate) {
+        console.log('Duplicate event detected. Removing the new event.');
+        // info.event.remove(); // Remove the duplicate event
+      } else {
+        console.log('New event added:', info.event);
+        // Add your event handling logic here
+      }
+    }
+  };
+
+  const handleEventDrop = (info: any) => {
+    console.log('Event dropped:', info.event);
+    // Handle the drop logic here
+  };
+
+  const handleEventDragStop = (info: any) => {
+    
+    const calendarEl = document.querySelector('.fc'); // Query the calendar DOM
+    if (calendarEl) {
+      const rect = calendarEl.getBoundingClientRect();
+      if (
+        info.jsEvent.pageX < rect.left ||
+        info.jsEvent.pageX > rect.right ||
+        info.jsEvent.pageY < rect.top ||
+        info.jsEvent.pageY > rect.bottom
+      ) {
+        // The event was dragged out of the calendar, so remove it
+        info.event.remove();
+        console.log('Event removed after dragging out of the calendar');
+      }
+    }
+    
   };
 
   return (
@@ -79,8 +119,10 @@ export default function Planner() {
                               editable={true}
                               droppable={true}
                               eventReceive={handleEventReceive}
+                              eventDrop={handleEventDrop}
+                              eventDragStop={handleEventDragStop}
                               ref={calendarRef}
-                              events={[]} // Load events from your backend if needed
+                              events={[]}
                           />
                       </div></>
                       </>

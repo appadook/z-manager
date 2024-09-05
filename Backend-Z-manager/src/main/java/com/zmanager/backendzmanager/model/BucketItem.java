@@ -1,6 +1,9 @@
 package com.zmanager.backendzmanager.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,10 +18,12 @@ public class BucketItem {
 
     @ManyToOne
     @JoinColumn(name = "bucket_id", nullable = false)
+    @JsonIgnore
     private Bucket bucket;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     public Long getId() {
@@ -51,5 +56,17 @@ public class BucketItem {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    // Serialize only the bucket ID
+    @JsonProperty("bucketId")
+    public Long getBucketId() {
+        return bucket != null ? bucket.getId() : null;
+    }
+
+    // Serialize only the user ID
+    @JsonProperty("userId")
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
     }
 }

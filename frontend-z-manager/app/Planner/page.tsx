@@ -71,7 +71,12 @@ export default function Planner() {
         // Delay the event addition slightly
         setTimeout(() => {
           info.event.setProp('id', newId);
-          // Add your event handling logic here
+          info.event.remove(); // Remove the original event
+          calendarApi.addEvent({ // Add a new event with animation
+            ...info.event.toPlainObject(),
+            id: newId,
+            className: 'scale-in'
+          });
         }, 50);
       }
     }
@@ -131,12 +136,13 @@ export default function Planner() {
                               ref={calendarRef}
                               events={[]}
                               eventDidMount={(info) => {
+                                info.el.classList.add('scale-in');
                                 info.el.style.opacity = '0';
                                 info.el.style.transform = 'scale(0.8)';
-                                setTimeout(() => {
+                                requestAnimationFrame(() => {
                                   info.el.style.opacity = '1';
                                   info.el.style.transform = 'scale(1)';
-                                }, 50);
+                                });
                               }}
                               eventColor="#3788d8"
                               eventTextColor="#ffffff"

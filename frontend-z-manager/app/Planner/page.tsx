@@ -6,7 +6,7 @@ import { CalendarApi } from '@fullcalendar/core';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import api from '../api/axiosInstance';
-
+import { debounce } from 'lodash';
 
 export default function Planner() {
   const calendarRef = useRef<FullCalendar>(null);
@@ -51,24 +51,31 @@ export default function Planner() {
   }, []);
 
 
-  const handleEventReceive = (info: any) => {
+  const debouncedHandleEventReceive = debounce((info: any) => {
+    console.log('handleEventReceive called', info.event.id);
+
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
-      const existingEvents = calendarApi.getEvents(); // Get all existing events
       
-  
-      // Check if the event is already present (compare by id or another unique identifier)
-      const isDuplicate = existingEvents.some(event => event.id === info.event.id);
-  
-      if (isDuplicate) {
+      // Check if an event with this ID already exists
+      const existingEvent = calendarApi.getEventById(info.event.id);
+      
+      if (existingEvent) {
         console.log('Duplicate event detected. Removing the new event.');
-        // info.event.remove(); // Remove the duplicate event
+        info.event.remove();
       } else {
         console.log('New event added:', info.event);
-        // Add your event handling logic here
+        // Generate a new unique ID for the event
+        const newId = `${info.event.id}-${Date.now()}`;
+        
+        // Delay the event addition slightly
+        setTimeout(() => {
+          info.event.setProp('id', newId);
+          // Add your event handling logic here
+        }, 50);
       }
     }
-  };
+  }, 100); // 100ms debounce time
 
   const handleEventDrop = (info: any) => {
     console.log('Event dropped:', info.event);
@@ -118,11 +125,28 @@ export default function Planner() {
                               initialView="timeGridWeek"
                               editable={true}
                               droppable={true}
-                              eventReceive={handleEventReceive}
+                              eventReceive={debouncedHandleEventReceive}
                               eventDrop={handleEventDrop}
                               eventDragStop={handleEventDragStop}
                               ref={calendarRef}
                               events={[]}
+                              eventDidMount={(info) => {
+                                info.el.style.opacity = '0';
+                                info.el.style.transform = 'scale(0.8)';
+                                setTimeout(() => {
+                                  info.el.style.opacity = '1';
+                                  info.el.style.transform = 'scale(1)';
+                                }, 50);
+                              }}
+                              eventColor="#3788d8"
+                              eventTextColor="#ffffff"
+                              eventBackgroundColor="#3788d8"
+                              eventBorderColor="#3788d8"
+                              eventTimeFormat={{
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                meridiem: 'short'
+                              }}
                           />
                       </div></>
                       </>

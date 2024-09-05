@@ -31,3 +31,30 @@ body {
     text-wrap: balance;
   }
 }
+
+.fc-event {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out !important;
+}
+
+.fc-event-main {
+  transition: background-color 0.3s ease-in-out !important;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.fc-event-main-frame {
+  transition: background-color 0.2s ease-in-out;
+}

@@ -83,27 +83,56 @@ export default function Planner() {
   }, 100); // 100ms debounce time
 
   const handleEventDrop = (info: any) => {
-    console.log('Event dropped:', info.event);
-    // Handle the drop logic here
+    console.log('handleEventDrop called', info);
+
+    const calendarApi = calendarRef.current?.getApi();
+    if (!calendarApi) {
+      console.log('Calendar API not available');
+      return;
+    }
+
+    const calendarStart = calendarApi.view.activeStart;
+    const calendarEnd = calendarApi.view.activeEnd;
+    
+    console.log('Calendar range:', calendarStart, calendarEnd);
+    console.log('Event range:', info.event.start, info.event.end);
+
+    if (info.event.start < calendarStart || info.event.end > calendarEnd) {
+      // The event was dropped outside the calendar's time range, so remove it
+      info.event.remove();
+      console.log('Event removed after dropping outside the calendar');
+    } else {
+      console.log('Event dropped within the calendar:', info.event);
+      // Handle the drop logic here for events within the calendar
+    }
   };
 
   const handleEventDragStop = (info: any) => {
-    
-    const calendarEl = document.querySelector('.fc'); // Query the calendar DOM
-    if (calendarEl) {
-      const rect = calendarEl.getBoundingClientRect();
-      if (
-        info.jsEvent.pageX < rect.left ||
-        info.jsEvent.pageX > rect.right ||
-        info.jsEvent.pageY < rect.top ||
-        info.jsEvent.pageY > rect.bottom
-      ) {
-        // The event was dragged out of the calendar, so remove it
-        info.event.remove();
-        console.log('Event removed after dragging out of the calendar');
-      }
+    console.log('Drag stopped', info.event.title, info.event.start);
+
+    const calendarEl = document.querySelector('.fc');
+    if (!calendarEl) {
+      console.log('Calendar element not found');
+      return;
     }
-    
+
+    const rect = calendarEl.getBoundingClientRect();
+    const { clientX, clientY } = info.jsEvent;
+
+    console.log('Calendar rect:', rect);
+    console.log('Mouse position:', clientX, clientY);
+
+    if (
+      clientX < rect.left ||
+      clientX > rect.right ||
+      clientY < rect.top ||
+      clientY > rect.bottom
+    ) {
+      console.log('Event dragged outside calendar');
+      info.event.remove();
+    } else {
+      console.log('Event dragged inside calendar');
+    }
   };
 
   return (
@@ -153,6 +182,8 @@ export default function Planner() {
                                 minute: '2-digit',
                                 meridiem: 'short'
                               }}
+                              eventDragStart={(info) => console.log('Drag started', info)}
+  
                           />
                       </div></>
                       </>

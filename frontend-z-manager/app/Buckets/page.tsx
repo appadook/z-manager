@@ -29,6 +29,7 @@ export default function Buckets() {
   const [addingItemToBucketId, setAddingItemToBucketId] = useState<number | null>(null);
   const [newBucketName, setNewBucketName] = useState<string>('');
   const [isAddingBucket, setIsAddingBucket] = useState<boolean>(false);
+  const [bucketToDelete, setBucketToDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     async function fetchBuckets() {
@@ -99,6 +100,7 @@ export default function Buckets() {
   const closeModal = () => {
     setIsModalOpen(false);
     setItemToDelete(null);
+    setBucketToDelete(null);
   };
 
   const handleAddItem = async (bucketId: number) => {
@@ -174,6 +176,36 @@ export default function Buckets() {
     }
   };
 
+  const handleDeleteBucket = async (bucketId: number, bucketName: string) => {
+    setBucketToDelete({ id: bucketId, name: bucketName });
+    setIsModalOpen(true);
+  };
+
+  const confirmDeleteBucket = async () => {
+    if (!bucketToDelete) return;
+
+    try {
+      await api.delete(`/users/${user_id}/buckets/${bucketToDelete.id}`);
+      setBuckets(prevBuckets => 
+        prevBuckets ? prevBuckets.filter(bucket => bucket.id !== bucketToDelete.id) : []
+      );
+      setIsModalOpen(false);
+      setBucketToDelete(null);
+    } catch (error: any) {
+      console.error('Error deleting bucket:', error);
+      let errorMessage = 'Failed to delete bucket';
+      if (error.response) {
+        errorMessage = `Server error: ${error.response.status} - ${error.response.data.message || error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = 'No response received from server';
+      } else {
+        errorMessage = error.message;
+      }
+      setError(errorMessage);
+      setIsModalOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -226,7 +258,15 @@ export default function Buckets() {
                 {buckets.map((bucket) => (
                   <div key={bucket.id} className="bg-white overflow-hidden shadow-sm rounded-lg">
                     <div className="px-4 py-5 sm:p-6">
-                      <h2 className="text-xl font-semibold text-gray-900 mb-4">{bucket.name}</h2>
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-900">{bucket.name}</h2>
+                        <button 
+                          className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
+                          onClick={() => handleDeleteBucket(bucket.id, bucket.name)}
+                        >
+                          Delete Bucket
+                        </button>
+                      </div>
                       {bucket.bucketItems && bucket.bucketItems.length > 0 ? (
                         <ul className="space-y-3">
                           {bucket.bucketItems.map((item) => (
@@ -290,8 +330,9 @@ export default function Buckets() {
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onConfirm={confirmDelete}
-        itemName={itemToDelete?.name || ''}
+        onConfirm={bucketToDelete ? confirmDeleteBucket : confirmDelete}
+        itemName={bucketToDelete ? bucketToDelete.name : (itemToDelete?.name || '')}
+        // itemType={bucketToDelete ? 'bucket' : 'item'}
       />
     </div>
   );

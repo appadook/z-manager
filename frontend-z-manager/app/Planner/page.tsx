@@ -10,6 +10,7 @@ import { debounce } from 'lodash';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { EventDropArg } from '@fullcalendar/core';
 import { log } from 'console';
+import ConfirmModal from '@/components/ConfirmModal'; // Add this import
 
 export default function Planner() {
   const calendarRef = useRef<FullCalendar>(null);
@@ -31,6 +32,8 @@ export default function Planner() {
   const [buckets, setBuckets] = useState<BucketProps[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<any>(null);
 
   // Fetch buckets and their items from the backend
   useEffect(() => {
@@ -171,10 +174,22 @@ export default function Planner() {
   };
 
   const handleEventClick = (clickInfo: any) => {
-    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'?`)) {
-      clickInfo.event.remove();
-      console.log('Event removed:', clickInfo.event);
+    setEventToDelete(clickInfo.event);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (eventToDelete) {
+      eventToDelete.remove();
+      console.log('Event removed:', eventToDelete);
     }
+    setIsConfirmModalOpen(false);
+    setEventToDelete(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsConfirmModalOpen(false);
+    setEventToDelete(null);
   };
 
   return (
@@ -183,69 +198,77 @@ export default function Planner() {
         <LoadingSpinner />
       ) : (
         <>
-        <h1>My Buckets</h1>
+        <h1 className="text-3xl font-bold text-white mb-6 text-center">My Buckets</h1>
         {error && <p className="text-red-500">{error}</p>}
-        <div id="draggable-container" className="buckets-container flex flex-wrap justify-around w-full my-4">
-                      {buckets.map((bucket) => (
-                          <div
-                              key={bucket.id}
-                              className="bucket bg-gray-100 p-4 rounded-lg m-2"
-                          >
-                              <h2 className="text-lg text-black font-bold mb-2">{bucket.name}</h2>
-                              <div className="bucket-items">
-                                  {bucket.bucketItems.map((item) => (
-                                      <div
-                                          key={item.id}
-                                          className="fc-event bucket-item bg-blue-500 text-white p-2 rounded cursor-pointer mb-2"
-                                          draggable="true"
-                                          data-id={item.id}
-                                      >
-                                          {item.name}
-                                      </div>
-                                  ))}
-                              </div>
-                          </div>
-                      ))}
-                  </div><div className="p-4 border rounded-lg shadow-lg planner-container w-full p-4 mt-6 mx-auto max-w-7xl">
-                          <FullCalendar
-                              plugins={[timeGridPlugin, interactionPlugin]}
-                              initialView="timeGridWeek"
-                              editable={true}
-                              droppable={true}
-                              eventReceive={debouncedHandleEventReceive}
-                              eventDrop={handleEventDrop}
-                              eventDragStop={handleEventDragStop}
-                              eventRemove={(info) => console.log('event removed', info)}
-                              eventClick={handleEventClick}
-                              ref={calendarRef}
-                              events={[]}
-                              eventDidMount={(info) => {
-                                info.el.classList.add('scale-in');
-                                info.el.style.opacity = '0';
-                                info.el.style.transform = 'scale(0.8)';
-                                requestAnimationFrame(() => {
-                                  info.el.style.opacity = '1';
-                                  info.el.style.transform = 'scale(1)';
-                                });
-                              }}
-                              eventColor="#3788d8"
-                              eventTextColor="#ffffff"
-                              eventBackgroundColor="#3788d8"
-                              eventBorderColor="#3788d8"
-                              eventTimeFormat={{
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                meridiem: 'short'
-                              }}
-                              eventDragStart={(info) => console.log('Drag started', info)}
-                              height="auto"
-                            
-                          />
-                      </div></>
-                      
-    )
-    }
-    
+        <div className="mx-8 bg-gray-800 p-6 rounded-lg mb-6">
+          <div id="draggable-container" className="buckets-container flex flex-wrap justify-around w-full m-4">
+            {buckets.map((bucket) => (
+                <div
+                    key={bucket.id}
+                    className="bucket bg-gray-100 p-4 rounded-lg m-2"
+                >
+                    <h2 className="text-lg text-black font-bold mb-2">{bucket.name}</h2>
+                    <div className="bucket-items">
+                        {bucket.bucketItems.map((item) => (
+                            <div
+                                key={item.id}
+                                className="fc-event bucket-item bg-blue-500 text-white p-2 rounded cursor-pointer mb-2"
+                                draggable="true"
+                                data-id={item.id}
+                            >
+                                {item.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+          </div>
+        </div>
+        <div className="border rounded-lg shadow-lg planner-container w-full p-4 mt-6 mx-auto max-w-7xl">
+            <FullCalendar
+                plugins={[timeGridPlugin, interactionPlugin]}
+                initialView="timeGridWeek"
+                editable={true}
+                droppable={true}
+                eventReceive={debouncedHandleEventReceive}
+                eventDrop={handleEventDrop}
+                eventDragStop={handleEventDragStop}
+                eventRemove={(info) => console.log('event removed', info)}
+                eventClick={handleEventClick}
+                ref={calendarRef}
+                events={[]}
+                eventDidMount={(info) => {
+                  info.el.classList.add('scale-in');
+                  info.el.style.opacity = '0';
+                  info.el.style.transform = 'scale(0.8)';
+                  requestAnimationFrame(() => {
+                    info.el.style.opacity = '1';
+                    info.el.style.transform = 'scale(1)';
+                  });
+                }}
+                eventColor="#3788d8"
+                eventTextColor="#ffffff"
+                eventBackgroundColor="#3788d8"
+                eventBorderColor="#3788d8"
+                eventTimeFormat={{
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  meridiem: 'short'
+                }}
+                eventDragStart={(info) => console.log('Drag started', info)}
+                height="600px"
+            />
+        </div>
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDelete}
+          itemName={eventToDelete ? eventToDelete.title : ''}
+        />
+        </>
+      )
+      }
+      
     </div>
   );
 }

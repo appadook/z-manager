@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 import api from '../api/axiosInstance';
 import { debounce } from 'lodash';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Planner() {
   const calendarRef = useRef<FullCalendar>(null);
@@ -20,6 +21,7 @@ export default function Planner() {
 
   const [buckets, setBuckets] = useState<BucketProps[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch buckets from the backend
   useEffect(() => {
@@ -29,7 +31,9 @@ export default function Planner() {
         setBuckets(response.data);
       } catch (error) {
         console.error('Error fetching buckets:', error);
-        setError('failed to fetch buckets')
+        setError('Failed to fetch buckets');
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -137,12 +141,13 @@ export default function Planner() {
 
   return (
     <div className="planner-page">
-    {error?(
-        <p className="" >{error}</p>
-    ) : (
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
         <>
         <h1>My Buckets</h1>
-        <><div id="draggable-container" className="buckets-container flex justify-around w-full my-4">
+        {error && <p className="text-red-500">{error}</p>}
+        <div id="draggable-container" className="buckets-container flex justify-around w-full my-4">
                       {buckets.map((bucket) => (
                           <div
                               key={bucket.id}
@@ -153,7 +158,7 @@ export default function Planner() {
                               {bucket.name}
                           </div>
                       ))}
-                  </div><div className="planner-container w-full">
+                  </div><div className="p-4 border rounded-lg shadow-lg planner-container w-full p-4 mt-6 mx-auto max-w-7xl">
                           <FullCalendar
                               plugins={[timeGridPlugin, interactionPlugin]}
                               initialView="timeGridWeek"
@@ -183,10 +188,11 @@ export default function Planner() {
                                 meridiem: 'short'
                               }}
                               eventDragStart={(info) => console.log('Drag started', info)}
-  
+                              height="auto"
+                            
                           />
                       </div></>
-                      </>
+                      
     )
     }
     

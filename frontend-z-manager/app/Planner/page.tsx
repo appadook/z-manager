@@ -15,6 +15,13 @@ export default function Planner() {
     id: number
     name: string
     user_id: number
+    bucketItems: BucketItemProps[]
+  }
+
+  type BucketItemProps = {
+    id: number
+    name: string
+    bucket_id: number
   }
 
   const user_id:string = '1';
@@ -23,11 +30,11 @@ export default function Planner() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch buckets from the backend
+  // Fetch buckets and their items from the backend
   useEffect(() => {
     async function fetchBuckets() {
       try {
-        const response = await api.get(`/users/${user_id}/buckets`);
+        const response = await api.get(`/users/${user_id}/buckets?include=items`);
         setBuckets(response.data);
       } catch (error) {
         console.error('Error fetching buckets:', error);
@@ -38,22 +45,23 @@ export default function Planner() {
     }
 
     fetchBuckets();
+  }, []);
 
+  useEffect(() => {
     // Initialize draggable elements
-    let draggableEl = document.getElementById('draggable-container');
+    const draggableEl = document.getElementById('draggable-container');
     if (draggableEl) {
       new Draggable(draggableEl, {
-        itemSelector: '.bucket-item', // Class for draggable items
-        eventData: function (eventEl) {
+        itemSelector: '.fc-event.bucket-item',
+        eventData: function(eventEl) {
           return {
-            title: eventEl.innerText.trim(),
+            title: eventEl.innerText,
             id: eventEl.getAttribute('data-id'),
           };
         },
       });
     }
-  }, []);
-
+  }, [buckets]); // Re-run this effect when buckets change
 
   const debouncedHandleEventReceive = debounce((info: any) => {
     console.log('handleEventReceive called', info.event.id);
@@ -147,15 +155,25 @@ export default function Planner() {
         <>
         <h1>My Buckets</h1>
         {error && <p className="text-red-500">{error}</p>}
-        <div id="draggable-container" className="buckets-container flex justify-around w-full my-4">
+        <div id="draggable-container" className="buckets-container flex flex-wrap justify-around w-full my-4">
                       {buckets.map((bucket) => (
                           <div
                               key={bucket.id}
-                              className="bucket-item bg-blue-500 text-white p-4 rounded cursor-pointer"
-                              draggable="true"
-                              data-id={bucket.id}
+                              className="bucket bg-gray-100 p-4 rounded-lg m-2"
                           >
-                              {bucket.name}
+                              <h2 className="text-lg text-black font-bold mb-2">{bucket.name}</h2>
+                              <div className="bucket-items">
+                                  {bucket.bucketItems.map((item) => (
+                                      <div
+                                          key={item.id}
+                                          className="fc-event bucket-item bg-blue-500 text-white p-2 rounded cursor-pointer mb-2"
+                                          draggable="true"
+                                          data-id={item.id}
+                                      >
+                                          {item.name}
+                                      </div>
+                                  ))}
+                              </div>
                           </div>
                       ))}
                   </div><div className="p-4 border rounded-lg shadow-lg planner-container w-full p-4 mt-6 mx-auto max-w-7xl">

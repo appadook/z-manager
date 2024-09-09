@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosInstance';
 import ConfirmModal from '@/components/ConfirmModal';
-import LoadingSpinner from '@/components/LoadingSpinner'; // You'll need to create this component
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 type BucketItem = {
   id: number;
@@ -27,6 +27,8 @@ export default function Buckets() {
   const [itemToDelete, setItemToDelete] = useState<{ bucketId: number; itemId: number; name: string } | null>(null);
   const [newItemName, setNewItemName] = useState<string>('');
   const [addingItemToBucketId, setAddingItemToBucketId] = useState<number | null>(null);
+  const [newBucketName, setNewBucketName] = useState<string>('');
+  const [isAddingBucket, setIsAddingBucket] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchBuckets() {
@@ -139,6 +141,39 @@ export default function Buckets() {
     }
   };
 
+  const handleAddBucket = async () => {
+    if (!newBucketName.trim()) {
+      setError('Bucket name cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/users/${user_id}/buckets`, {
+        name: newBucketName.trim(),
+        user_id: parseInt(user_id)
+      });
+
+      const newBucket = response.data;
+      setBuckets(prevBuckets => 
+        prevBuckets ? [...prevBuckets, { ...newBucket, bucketItems: [] }] : [{ ...newBucket, bucketItems: [] }]
+      );
+
+      setNewBucketName('');
+      setIsAddingBucket(false);
+      setError(null);
+    } catch (error: any) {
+      let errorMessage = 'Failed to add new bucket';
+      if (error.response) {
+        errorMessage = `Server error: ${error.response.status} - ${error.response.data.message || error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = 'No response received from server';
+      } else {
+        errorMessage = error.message;
+      }
+      setError(errorMessage);
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -149,70 +184,107 @@ export default function Buckets() {
           <p className="text-red-500 bg-red-100 border border-red-400 rounded p-4 mb-4">{error}</p>
         ) : buckets === null ? (
           <p className="text-gray-500">Loading buckets...</p>
-        ) : buckets.length === 0 ? (
-          <p className="text-gray-500">No buckets found.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {buckets.map((bucket) => (
-              <div key={bucket.id} className="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div className="px-4 py-5 sm:p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">{bucket.name}</h2>
-                  {bucket.bucketItems && bucket.bucketItems.length > 0 ? (
-                    <ul className="space-y-3">
-                      {bucket.bucketItems.map((item) => (
-                        <li key={item.id} className="bg-gray-50 px-4 py-3 rounded-md flex justify-between items-center">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
-                          </div>
-                          <button 
-                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
-                            onClick={() => handleDeleteItem(bucket.id, item.id, item.name)}
-                          >
-                            Delete
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500">No items in this bucket.</p>
-                  )}
-                  {addingItemToBucketId === bucket.id ? (
-                    <div className="mt-4">
-                      <input
-                        type="text"
-                        value={newItemName}
-                        onChange={(e) => setNewItemName(e.target.value)}
-                        className="border rounded px-2 py-1 mr-2 text-black" // Added text-black class
-                        placeholder="New item name"
-                      />
-                      <button
-                        onClick={() => handleAddItem(bucket.id)}
-                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => {
-                          setAddingItemToBucketId(null);
-                          setNewItemName('');
-                        }}
-                        className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAddingItemToBucketId(bucket.id)}
-                      className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Add New Item
-                    </button>
-                  )}
-                </div>
+          <>
+            {isAddingBucket ? (
+              <div className="mb-6">
+                <input
+                  type="text"
+                  value={newBucketName}
+                  onChange={(e) => setNewBucketName(e.target.value)}
+                  className="border rounded px-2 py-1 mr-2 text-black"
+                  placeholder="New bucket name"
+                />
+                <button
+                  onClick={handleAddBucket}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                >
+                  Add Bucket
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAddingBucket(false);
+                    setNewBucketName('');
+                  }}
+                  className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
+                >
+                  Cancel
+                </button>
               </div>
-            ))}
-          </div>
+            ) : (
+              <button
+                onClick={() => setIsAddingBucket(true)}
+                className="mb-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Add New Bucket
+              </button>
+            )}
+            {buckets.length === 0 ? (
+              <p className="text-gray-500">No buckets found.</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {buckets.map((bucket) => (
+                  <div key={bucket.id} className="bg-white overflow-hidden shadow-sm rounded-lg">
+                    <div className="px-4 py-5 sm:p-6">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-4">{bucket.name}</h2>
+                      {bucket.bucketItems && bucket.bucketItems.length > 0 ? (
+                        <ul className="space-y-3">
+                          {bucket.bucketItems.map((item) => (
+                            <li key={item.id} className="bg-gray-50 px-4 py-3 rounded-md flex justify-between items-center">
+                              <div>
+                                <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
+                              </div>
+                              <button 
+                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
+                                onClick={() => handleDeleteItem(bucket.id, item.id, item.name)}
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500">No items in this bucket.</p>
+                      )}
+                      {addingItemToBucketId === bucket.id ? (
+                        <div className="mt-4">
+                          <input
+                            type="text"
+                            value={newItemName}
+                            onChange={(e) => setNewItemName(e.target.value)}
+                            className="border rounded px-2 py-1 mr-2 text-black"
+                            placeholder="New item name"
+                          />
+                          <button
+                            onClick={() => handleAddItem(bucket.id)}
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                          >
+                            Add
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAddingItemToBucketId(null);
+                              setNewItemName('');
+                            }}
+                            className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setAddingItemToBucketId(bucket.id)}
+                          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                        >
+                          Add New Item
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
       <ConfirmModal

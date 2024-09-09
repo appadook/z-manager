@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users/{userId}/buckets")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class BucketController {
 
     @Autowired

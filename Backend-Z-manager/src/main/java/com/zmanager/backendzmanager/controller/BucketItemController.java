@@ -1,5 +1,6 @@
 package com.zmanager.backendzmanager.controller;
 
+import ch.qos.logback.classic.Logger;
 import com.zmanager.backendzmanager.model.Bucket;
 import com.zmanager.backendzmanager.model.BucketItem;
 import com.zmanager.backendzmanager.model.User;
@@ -7,7 +8,10 @@ import com.zmanager.backendzmanager.repository.BucketItemRepository;
 import com.zmanager.backendzmanager.repository.BucketRepository;
 import com.zmanager.backendzmanager.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users/{userId}/buckets/{bucketId}/items")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class BucketItemController {
 
     @Autowired
@@ -26,6 +31,9 @@ public class BucketItemController {
 
     @Autowired
     private BucketItemRepository bucketItemRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // Endpoint to add a new bucket item for a specific bucket and user
     @PostMapping
@@ -80,7 +88,6 @@ public class BucketItemController {
         return ResponseEntity.ok(bucket.getBucketItems());
     }
 
-
     @PutMapping("/{itemId}")
     public ResponseEntity<BucketItem> updateBucketItem(
             @PathVariable Long userId,
@@ -107,5 +114,26 @@ public class BucketItemController {
         return ResponseEntity.ok(updatedBucketItem);
     }
 
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<BucketItem> deleteBucketItem(
+            @PathVariable Long userId,
+            @PathVariable Long bucketId,
+            @PathVariable Long itemId) {
+
+        Optional<BucketItem> optionalBucketItem = bucketItemRepository.findById(itemId);
+        if (!optionalBucketItem.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        BucketItem bucketItem = optionalBucketItem.get();
+
+        // Ensure the bucket item belongs to the correct bucket and user
+        if (!Objects.equals(bucketItem.getBucket().getId(), bucketId) || !bucketItem.getUser().getId().equals(userId)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        bucketItemRepository.delete(bucketItem);
+        return ResponseEntity.ok().build();
+    }
 }
 

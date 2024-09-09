@@ -207,61 +207,63 @@ export default function Buckets() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">My Buckets</h1>
+        <h1 className="text-4xl font-bold text-white mb-8">My Buckets</h1>
         {isLoading ? (
           <LoadingSpinner />
         ) : error ? (
-          <p className="text-red-500 bg-red-100 border border-red-400 rounded p-4 mb-4">{error}</p>
+          <p className="text-red-500 bg-red-100 border border-red-400 rounded-lg p-4 mb-4">{error}</p>
         ) : buckets === null ? (
           <p className="text-gray-500">Loading buckets...</p>
         ) : (
           <>
-            {isAddingBucket ? (
-              <div className="mb-6">
-                <input
-                  type="text"
-                  value={newBucketName}
-                  onChange={(e) => setNewBucketName(e.target.value)}
-                  className="border rounded px-2 py-1 mr-2 text-black"
-                  placeholder="New bucket name"
-                />
+            <div className="mb-8">
+              {isAddingBucket ? (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={newBucketName}
+                    onChange={(e) => setNewBucketName(e.target.value)}
+                    className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="New bucket name"
+                  />
+                  <button
+                    onClick={handleAddBucket}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                  >
+                    Add Bucket
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAddingBucket(false);
+                      setNewBucketName('');
+                    }}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={handleAddBucket}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                  onClick={() => setIsAddingBucket(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
                 >
-                  Add Bucket
+                  Add New Bucket
                 </button>
-                <button
-                  onClick={() => {
-                    setIsAddingBucket(false);
-                    setNewBucketName('');
-                  }}
-                  className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsAddingBucket(true)}
-                className="mb-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-              >
-                Add New Bucket
-              </button>
-            )}
+              )}
+            </div>
             {buckets.length === 0 ? (
               <p className="text-gray-500">No buckets found.</p>
             ) : (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {buckets.map((bucket) => (
-                  <div key={bucket.id} className="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
+                  <div key={bucket.id} className="bg-white overflow-hidden shadow-lg rounded-lg transition duration-150 ease-in-out hover:shadow-xl">
+                    <div className="px-6 py-5">
                       <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900">{bucket.name}</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900">{bucket.name}</h2>
                         <button 
-                          className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
+                          className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-lg transition duration-150 ease-in-out"
                           onClick={() => handleDeleteBucket(bucket.id, bucket.name)}
                         >
                           Delete Bucket
@@ -270,12 +272,10 @@ export default function Buckets() {
                       {bucket.bucketItems && bucket.bucketItems.length > 0 ? (
                         <ul className="space-y-3">
                           {bucket.bucketItems.map((item) => (
-                            <li key={item.id} className="bg-gray-50 px-4 py-3 rounded-md flex justify-between items-center">
-                              <div>
-                                <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
-                              </div>
+                            <li key={item.id} className="bg-gray-50 px-4 py-3 rounded-lg flex justify-between items-center hover:bg-gray-100 transition duration-150 ease-in-out">
+                              <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
                               <button 
-                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded"
+                                className="bg-red-100 hover:bg-red-200 text-red-600 font-semibold py-1 px-3 rounded-lg transition duration-150 ease-in-out"
                                 onClick={() => handleDeleteItem(bucket.id, item.id, item.name)}
                               >
                                 Delete
@@ -287,17 +287,17 @@ export default function Buckets() {
                         <p className="text-gray-500">No items in this bucket.</p>
                       )}
                       {addingItemToBucketId === bucket.id ? (
-                        <div className="mt-4">
+                        <div className="mt-4 flex items-center space-x-2">
                           <input
                             type="text"
                             value={newItemName}
                             onChange={(e) => setNewItemName(e.target.value)}
-                            className="border rounded px-2 py-1 mr-2 text-black"
+                            className="flex-grow border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="New item name"
                           />
                           <button
                             onClick={() => handleAddItem(bucket.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg transition duration-150 ease-in-out"
                           >
                             Add
                           </button>
@@ -306,7 +306,7 @@ export default function Buckets() {
                               setAddingItemToBucketId(null);
                               setNewItemName('');
                             }}
-                            className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
+                            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-1 px-3 rounded-lg transition duration-150 ease-in-out"
                           >
                             Cancel
                           </button>
@@ -314,7 +314,7 @@ export default function Buckets() {
                       ) : (
                         <button
                           onClick={() => setAddingItemToBucketId(bucket.id)}
-                          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
                         >
                           Add New Item
                         </button>
@@ -332,8 +332,8 @@ export default function Buckets() {
         onClose={closeModal}
         onConfirm={bucketToDelete ? confirmDeleteBucket : confirmDelete}
         itemName={bucketToDelete ? bucketToDelete.name : (itemToDelete?.name || '')}
-        // itemType={bucketToDelete ? 'bucket' : 'item'}
       />
     </div>
   );
+
 }

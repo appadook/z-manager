@@ -1,0 +1,12 @@
+{
+  "name": "your-project-name",
+  "version": "1.0.0",
+  "scripts": {
+    "frontend": "cd frontend-z-manager && npm run dev",  
+    "backend": "cd backend-z-manager && ./mvnw spring-boot:run",  
+    "start:all": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}

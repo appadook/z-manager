@@ -15,7 +15,7 @@ type BucketItem = {
 type Bucket = {
   id: number;
   name: string;
-  bucketItems: BucketItem[]; // Changed from 'items'
+  bucketItems: BucketItem[]; 
 }
 
 export default function Buckets() {
@@ -25,30 +25,26 @@ export default function Buckets() {
   const user_id = '1'; // Replace with actual user ID or authentication logic
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ bucketId: number; itemId: number; name: string } | null>(null);
+  const [newItemName, setNewItemName] = useState<string>('');
+  const [addingItemToBucketId, setAddingItemToBucketId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchBuckets() {
       setIsLoading(true);
       setError(null);
       try {
-        console.log('Fetching buckets...');
         const response = await api.get(`/users/${user_id}/buckets`);
-        console.log('Response received:', response);
         const fetchedBuckets = response.data;
-        console.log('Fetched buckets:', fetchedBuckets);
         if (Array.isArray(fetchedBuckets)) {
           setBuckets(fetchedBuckets);
         } else {
-          console.error('Fetched data is not an array:', fetchedBuckets);
           setError('Received invalid data format from server');
           setBuckets([]); // Set to empty array to avoid rendering issues
         }
       } catch (error: any) {
-        console.error('Error fetching buckets:', error);
         let errorMessage = 'Failed to fetch buckets';
         if (error.response) {
           errorMessage = `Server error: ${error.response.status} - ${error.response.data.message || error.response.statusText}`;
-          console.error('Detailed error:', error.response.data);
         } else if (error.request) {
           errorMessage = 'No response received from server';
         } else {
@@ -63,8 +59,6 @@ export default function Buckets() {
 
     fetchBuckets();
   }, []);
-
-  console.log('Rendering component. Buckets:', buckets);
 
   const handleDeleteItem = async (bucketId: number, itemId: number, itemName: string) => {
     setItemToDelete({ bucketId, itemId, name: itemName });
@@ -105,6 +99,46 @@ export default function Buckets() {
     setItemToDelete(null);
   };
 
+  const handleAddItem = async (bucketId: number) => {
+    if (!newItemName.trim()) {
+      setError('Item name cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/users/${user_id}/buckets/${bucketId}/items`, {
+        name: newItemName.trim(),
+        user_id: parseInt(user_id),
+        bucket_id: bucketId
+      });
+
+      const newItem = response.data;
+      console.log(newItem);
+
+      setBuckets(prevBuckets => 
+        prevBuckets ? prevBuckets.map(bucket => 
+          bucket.id === bucketId
+            ? { ...bucket, bucketItems: [...bucket.bucketItems, newItem] }
+            : bucket
+        ) : []
+      );
+
+      setNewItemName('');
+      setAddingItemToBucketId(null);
+      setError(null);
+    } catch (error: any) {
+      let errorMessage = 'Failed to add new item';
+      if (error.response) {
+        errorMessage = `Server error: ${error.response.status} - ${error.response.data.message || error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = 'No response received from server';
+      } else {
+        errorMessage = error.message;
+      }
+      setError(errorMessage);
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -142,9 +176,39 @@ export default function Buckets() {
                   ) : (
                     <p className="text-gray-500">No items in this bucket.</p>
                   )}
-                  <button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                    Add New Item
-                  </button>
+                  {addingItemToBucketId === bucket.id ? (
+                    <div className="mt-4">
+                      <input
+                        type="text"
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        className="border rounded px-2 py-1 mr-2 text-black" // Added text-black class
+                        placeholder="New item name"
+                      />
+                      <button
+                        onClick={() => handleAddItem(bucket.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded"
+                      >
+                        Add
+                      </button>
+                      <button
+                        onClick={() => {
+                          setAddingItemToBucketId(null);
+                          setNewItemName('');
+                        }}
+                        className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-2 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setAddingItemToBucketId(bucket.id)}
+                      className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Add New Item
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

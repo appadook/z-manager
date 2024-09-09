@@ -14,14 +14,15 @@ public class BucketItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bucket_id", nullable = false)
     @JsonIgnore
     private Bucket bucket;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;
@@ -68,5 +69,16 @@ public class BucketItem {
     @JsonProperty("userId")
     public Long getUserId() {
         return user != null ? user.getId() : null;
+    }
+
+    // Add these convenience methods for setting bucket and user by ID
+    public void setBucketId(Long bucketId) {
+        this.bucket = new Bucket();
+        this.bucket.setId(bucketId);
+    }
+
+    public void setUserId(Long userId) {
+        this.user = new User();
+        this.user.setId(userId);
     }
 }

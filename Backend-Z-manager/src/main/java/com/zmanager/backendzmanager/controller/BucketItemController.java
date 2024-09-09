@@ -40,7 +40,7 @@ public class BucketItemController {
     public ResponseEntity<BucketItem> createBucketItem(
             @PathVariable Long userId,
             @PathVariable Long bucketId,
-            @RequestBody BucketItem bucketItem) {
+            @RequestBody BucketItem bucketItemRequest) {
 
         Optional<User> optionalUser = userRepository.findById(userId);
         if (!optionalUser.isPresent()) {
@@ -60,9 +60,14 @@ public class BucketItemController {
             return ResponseEntity.badRequest().build();
         }
 
-        bucketItem.setUser(user);
-        bucketItem.setBucket(bucket);
-        BucketItem savedBucketItem = bucketItemRepository.save(bucketItem);
+        // Create a new BucketItem instance
+        BucketItem newBucketItem = new BucketItem();
+        newBucketItem.setName(bucketItemRequest.getName());
+        newBucketItem.setUser(user);
+        newBucketItem.setBucket(bucket);
+
+        // Save the new item
+        BucketItem savedBucketItem = bucketItemRepository.save(newBucketItem);
 
         return ResponseEntity.ok(savedBucketItem);
     }

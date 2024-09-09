@@ -4,10 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import { CalendarApi } from '@fullcalendar/core'; 
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
+import interactionPlugin, { Draggable, EventDragStopArg } from '@fullcalendar/interaction';
 import api from '../api/axiosInstance';
 import { debounce } from 'lodash';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { EventDropArg } from '@fullcalendar/core';
+import { log } from 'console';
 
 export default function Planner() {
   const calendarRef = useRef<FullCalendar>(null);
@@ -119,9 +121,7 @@ export default function Planner() {
     }
   };
 
-  const handleEventDragStop = (info: any) => {
-    console.log('Drag stopped', info.event.title, info.event.start);
-
+  const handleEventDragStop = (info: EventDragStopArg) => {
     const calendarEl = document.querySelector('.fc');
     if (!calendarEl) {
       console.log('Calendar element not found');
@@ -131,9 +131,6 @@ export default function Planner() {
     const rect = calendarEl.getBoundingClientRect();
     const { clientX, clientY } = info.jsEvent;
 
-    console.log('Calendar rect:', rect);
-    console.log('Mouse position:', clientX, clientY);
-
     if (
       clientX < rect.left ||
       clientX > rect.right ||
@@ -141,9 +138,42 @@ export default function Planner() {
       clientY > rect.bottom
     ) {
       console.log('Event dragged outside calendar');
-      info.event.remove();
+      
+      // Remove the event from the calendar
+      if (calendarRef.current) {
+        const calendarApi = calendarRef.current.getApi();
+        const event = calendarApi.getEventById(info.event.id);
+        if (event) {
+          try {
+            event.remove();
+            console.log('Event successfully removed from calendar');
+            
+            // Find the original bucket item and add it back to the bucket
+            const itemId = info.event.id.split('-')[0];
+            const updatedBuckets = buckets.map(bucket => ({
+              ...bucket,
+              bucketItems: bucket.bucketItems.some(item => item.id.toString() === itemId)
+                ? bucket.bucketItems
+                : [...bucket.bucketItems, { id: parseInt(itemId), name: info.event.title, bucket_id: bucket.id }]
+            }));
+            
+            setBuckets(updatedBuckets);
+          } catch (error) {
+            console.error('Error removing event:', error);
+          }
+        } else {
+          console.log('Event not found in calendar');
+        }
+      }
     } else {
       console.log('Event dragged inside calendar');
+    }
+  };
+
+  const handleEventClick = (clickInfo: any) => {
+    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'?`)) {
+      clickInfo.event.remove();
+      console.log('Event removed:', clickInfo.event);
     }
   };
 
@@ -185,6 +215,8 @@ export default function Planner() {
                               eventReceive={debouncedHandleEventReceive}
                               eventDrop={handleEventDrop}
                               eventDragStop={handleEventDragStop}
+                              eventRemove={(info) => console.log('event removed', info)}
+                              eventClick={handleEventClick}
                               ref={calendarRef}
                               events={[]}
                               eventDidMount={(info) => {

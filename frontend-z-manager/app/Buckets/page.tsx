@@ -225,7 +225,7 @@ export default function Buckets() {
                     type="text"
                     value={newBucketName}
                     onChange={(e) => setNewBucketName(e.target.value)}
-                    className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     placeholder="New bucket name"
                   />
                   <button
@@ -292,7 +292,7 @@ export default function Buckets() {
                             type="text"
                             value={newItemName}
                             onChange={(e) => setNewItemName(e.target.value)}
-                            className="flex-grow border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-grow border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                             placeholder="New item name"
                           />
                           <button

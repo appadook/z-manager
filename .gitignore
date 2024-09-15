@@ -3,6 +3,7 @@
 
 # Node modules
 /frontend-z-manager/node_modules/
+/node_modules
 
 # Log files
 **/logs/
